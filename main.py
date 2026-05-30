@@ -13,7 +13,6 @@ API_KEY = os.environ.get("API_KEY", "changeme")
 jobs = {}
 
 def get_access_token():
-    """מקבל access token מהר באמצעות refresh token"""
     resp = requests.post("https://oauth2.googleapis.com/token", data={
         "client_id": os.environ.get("GOOGLE_CLIENT_ID"),
         "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET"),
@@ -32,7 +31,6 @@ def get_cookies_file():
     return tmp.name
 
 def upload_to_drive(file_path, filename, folder_id, access_token):
-    """מעלה קובץ לדרייב ישירות"""
     metadata = {"name": filename}
     if folder_id:
         metadata["parents"] = [folder_id]
@@ -49,11 +47,9 @@ def upload_to_drive(file_path, filename, folder_id, access_token):
     return resp.json()
 
 def download_and_upload(job_id, video_url, quality, filename, folder_id):
-    """מוריד מיוטיוב ומעלה לדרייב ברקע"""
     try:
         jobs[job_id]["status"] = "DOWNLOADING"
 
-        # בחירת פורמט
         if quality == "audio":
             fmt = "bestaudio[ext=m4a]/bestaudio"
             ext = "m4a"
@@ -70,7 +66,6 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
             fmt = "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720]"
             ext = "mp4"
 
-        # תיקיית הורדה זמנית
         tmp_dir = tempfile.mkdtemp()
         out_path = os.path.join(tmp_dir, "video.%(ext)s")
 
@@ -90,7 +85,6 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
             info = ydl.extract_info(video_url, download=True)
             title = info.get("title", "video")
 
-        # מצא את הקובץ שהורד
         downloaded_file = None
         for f in os.listdir(tmp_dir):
             downloaded_file = os.path.join(tmp_dir, f)
@@ -103,12 +97,10 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
 
         jobs[job_id]["status"] = "UPLOADING"
 
-        # קבל access token והעלה לדרייב
         access_token = get_access_token()
         final_filename = filename or (title + "." + ext)
         result = upload_to_drive(downloaded_file, final_filename, folder_id, access_token)
 
-        # נקה קובץ זמני
         os.remove(downloaded_file)
 
         if "id" in result:
@@ -125,11 +117,13 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
 
 @app.route("/download")
 def download():
-    
-    if request.headers.get("X-API-Key") != API_KEY:
-        print("Received key:", request.headers.get("X-API-Key"))
+    received_key = request.headers.get("X-API-Key")
+    print("Received key:", received_key)
+    print("Expected key:", API_KEY)
+
+    if received_key != API_KEY:
         return jsonify({"error": "Unauthorized"}), 401
-print("Expected key:", API_KEY)
+
     video_url = request.args.get("url")
     quality = request.args.get("quality", "720")
     filename = request.args.get("filename", "")
@@ -141,7 +135,6 @@ print("Expected key:", API_KEY)
     job_id = str(uuid.uuid4())
     jobs[job_id] = {"status": "QUEUED"}
 
-    # מריץ ברקע
     t = threading.Thread(target=download_and_upload, args=(job_id, video_url, quality, filename, folder_id))
     t.daemon = True
     t.start()
