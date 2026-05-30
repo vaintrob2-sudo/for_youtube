@@ -1,6 +1,18 @@
 from flask import Flask, request, jsonify
 import yt_dlp
 import os
+import tempfile
+
+# בתחילת הקובץ, אחרי הimports
+def get_cookies_file():
+    cookies_content = os.environ.get("YOUTUBE_COOKIES", "")
+    if not cookies_content:
+        return None
+    tmp = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False)
+    tmp.write(cookies_content)
+    tmp.close()
+    return tmp.name
+
 
 app = Flask(__name__)
 API_KEY = os.environ.get("API_KEY", "changeme")
