@@ -46,6 +46,46 @@ def upload_to_drive(file_path, filename, folder_id, access_token):
         )
     return resp.json()
 
+def is_youtube(url):
+    return "youtube.com" in url or "youtu.be" in url
+
+def download_direct(job_id, video_url, filename, folder_id):
+    """הורדת קישור ישיר (לא יוטיוב)"""
+    try:
+        jobs[job_id]["status"] = "DOWNLOADING"
+
+        tmp_dir = tempfile.mkdtemp()
+
+        # זיהוי סיומת מהקישור
+        from urllib.parse import urlparse
+        path = urlparse(video_url).path
+        ext = os.path.splitext(path)[1] or ".bin"
+        final_filename = filename or (os.path.basename(path) or "file") + ext
+        out_path = os.path.join(tmp_dir, final_filename)
+
+        with requests.get(video_url, stream=True, timeout=3600) as r:
+            r.raise_for_status()
+            with open(out_path, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8*1024*1024):
+                    f.write(chunk)
+
+        jobs[job_id]["status"] = "UPLOADING"
+        access_token = get_access_token()
+        result = upload_to_drive(out_path, final_filename, folder_id, access_token)
+        os.remove(out_path)
+
+        if "id" in result:
+            jobs[job_id]["status"] = "COMPLETED"
+            jobs[job_id]["file_id"] = result["id"]
+            jobs[job_id]["title"] = final_filename
+        else:
+            jobs[job_id]["status"] = "FAILED"
+            jobs[job_id]["error"] = str(result)
+
+    except Exception as e:
+        jobs[job_id]["status"] = "FAILED"
+        jobs[job_id]["error"] = str(e)
+
 def download_and_upload(job_id, video_url, quality, filename, folder_id):
     try:
         jobs[job_id]["status"] = "DOWNLOADING"
@@ -135,7 +175,14 @@ def download():
     job_id = str(uuid.uuid4())
     jobs[job_id] = {"status": "QUEUED"}
 
-    t = threading.Thread(target=download_and_upload, args=(job_id, video_url, quality, filename, folder_id))
+    if is_youtube(video_url):
+        target = download_and_upload
+        args = (job_id, video_url, quality, filename, folder_id)
+    else:
+        target = download_direct
+        args = (job_id, video_url, filename, folder_id)
+
+    t = threading.Thread(target=target, args=args)
     t.daemon = True
     t.start()
 
