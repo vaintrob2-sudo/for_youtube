@@ -125,9 +125,11 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
 
 @app.route("/download")
 def download():
+    
     if request.headers.get("X-API-Key") != API_KEY:
+        print("Received key:", request.headers.get("X-API-Key"))
         return jsonify({"error": "Unauthorized"}), 401
-
+print("Expected key:", API_KEY)
     video_url = request.args.get("url")
     quality = request.args.get("quality", "720")
     filename = request.args.get("filename", "")
