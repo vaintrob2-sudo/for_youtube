@@ -87,25 +87,33 @@ def download_direct(job_id, video_url, filename, folder_id):
     """הורדת קישור ישיר (לא יוטיוב)"""
     try:
         jobs[job_id]["status"] = "DOWNLOADING"
+        print(f"Starting direct download: {video_url}")
 
         tmp_dir = tempfile.mkdtemp()
 
-        # זיהוי סיומת מהקישור
         from urllib.parse import urlparse
         path = urlparse(video_url).path
         ext = os.path.splitext(path)[1] or ".bin"
-        final_filename = filename or (os.path.basename(path) or "file") + ext
+        base = os.path.basename(path) or "file"
+        final_filename = filename or (base if ext in base else base + ext)
         out_path = os.path.join(tmp_dir, final_filename)
 
-        with requests.get(video_url, stream=True, timeout=3600) as r:
+        headers = {"User-Agent": "Mozilla/5.0"}
+        with requests.get(video_url, stream=True, timeout=3600, headers=headers) as r:
+            print(f"HTTP status: {r.status_code}, Content-Length: {r.headers.get('Content-Length')}")
             r.raise_for_status()
+            total = 0
             with open(out_path, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=8*1024*1024):
+                for chunk in r.iter_content(chunk_size=1024*1024):
                     f.write(chunk)
+                    total += len(chunk)
+            print(f"Downloaded {total} bytes")
 
         jobs[job_id]["status"] = "UPLOADING"
+        print("Starting upload to Drive")
         access_token = get_access_token()
         result = upload_to_drive(out_path, final_filename, folder_id, access_token)
+        print(f"Upload result: {result}")
         os.remove(out_path)
 
         if "id" in result:
@@ -117,8 +125,10 @@ def download_direct(job_id, video_url, filename, folder_id):
             jobs[job_id]["error"] = str(result)
 
     except Exception as e:
+        print(f"download_direct error: {e}")
         jobs[job_id]["status"] = "FAILED"
         jobs[job_id]["error"] = str(e)
+
 
 def download_and_upload(job_id, video_url, quality, filename, folder_id):
     try:
