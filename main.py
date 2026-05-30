@@ -31,20 +31,54 @@ def get_cookies_file():
     return tmp.name
 
 def upload_to_drive(file_path, filename, folder_id, access_token):
+    import json as json_lib
     metadata = {"name": filename}
     if folder_id:
         metadata["parents"] = [folder_id]
 
+    file_size = os.path.getsize(file_path)
+
+    # שלב א': פתח session של העלאה
+    init_resp = requests.post(
+        "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable",
+        headers={
+            "Authorization": "Bearer " + access_token,
+            "Content-Type": "application/json",
+            "X-Upload-Content-Length": str(file_size),
+        },
+        data=json_lib.dumps(metadata)
+    )
+
+    upload_url = init_resp.headers.get("Location")
+    if not upload_url:
+        return {"error": "Failed to get upload URL", "details": init_resp.text}
+
+    # שלב ב': העלאה בחלקים של 10MB
+    chunk_size = 10 * 1024 * 1024
+    uploaded = 0
+
     with open(file_path, 'rb') as f:
-        resp = requests.post(
-            "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
-            headers={"Authorization": "Bearer " + access_token},
-            files={
-                "metadata": ("metadata", str(metadata).replace("'", '"'), "application/json"),
-                "file": (filename, f, "video/mp4")
-            }
-        )
-    return resp.json()
+        while uploaded < file_size:
+            chunk = f.read(chunk_size)
+            end = uploaded + len(chunk) - 1
+            resp = requests.put(
+                upload_url,
+                headers={
+                    "Content-Range": f"bytes {uploaded}-{end}/{file_size}",
+                    "Content-Length": str(len(chunk)),
+                },
+                data=chunk
+            )
+            uploaded += len(chunk)
+
+            if resp.status_code in (200, 201):
+                return resp.json()
+            elif resp.status_code == 308:
+                continue
+            else:
+                return {"error": f"Upload failed at {uploaded}", "status": resp.status_code}
+
+    return {"error": "Upload ended without completion"}
 
 def is_youtube(url):
     return "youtube.com" in url or "youtu.be" in url
