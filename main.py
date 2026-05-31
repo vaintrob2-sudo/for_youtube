@@ -152,7 +152,7 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
 
         cookies_file = get_cookies_file()
 
-      ydl_opts = {
+        ydl_opts = {
             "format": fmt,
             "outtmpl": out_path,
             "quiet": True,
