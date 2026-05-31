@@ -157,8 +157,8 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
             "quiet": True,
             "no_warnings": True,
             "merge_output_format": "mp4",
-            "js_runtimes": {"quickjs": {"path": "/root/.nix-profile/bin/qjs"}},
-            "cachedir": "/data/ytdlp_cache",
+            "extractor_args": {"youtube": {"player_client": ["tv_embedded"]}},
+            "cachedir": "/data/ytdlp_cache"
         }
         if cookies_file:
             ydl_opts["cookiefile"] = cookies_file
