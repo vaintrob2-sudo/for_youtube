@@ -127,6 +127,9 @@ def download_direct(job_id, video_url, filename, folder_id):
 def download_and_upload(job_id, video_url, quality, filename, folder_id):
     try:
         jobs[job_id]["status"] = "DOWNLOADING"
+        import subprocess
+        result = subprocess.run(["which", "qjs"], capture_output=True, text=True)
+        print(f"qjs path: {result.stdout.strip()}")
 
         if quality == "audio":
             fmt = "bestaudio/best"
