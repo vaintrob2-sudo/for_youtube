@@ -152,7 +152,7 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
         out_path = os.path.join(tmp_dir, "video.%(ext)s")
 
         cookies_file = get_cookies_file()
-
+        os.environ["PATH"] = "/root/.nix-profile/bin:" + os.environ.get("PATH", "")
         ydl_opts = {
             "format": fmt,
             "outtmpl": out_path,
