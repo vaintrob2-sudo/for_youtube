@@ -132,16 +132,16 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
             fmt = "bestaudio[ext=m4a]/bestaudio/best"
             ext = "m4a"
         elif quality == "1080":
-            fmt = "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best"
+            fmt = "bestvideo[height<=1080]+bestaudio/best"
             ext = "mp4"
         elif quality == "480":
-            fmt = "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best"
+            fmt = "bestvideo[height<=480]+bestaudio/best"
             ext = "mp4"
         elif quality == "360":
-            fmt = "bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=360]+bestaudio/best"
+            fmt = "bestvideo[height<=360]+bestaudio/best"
             ext = "mp4"
         else:
-            fmt = "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best"
+            fmt = "bestvideo[height<=720]+bestaudio/best"
             ext = "mp4"
 
         tmp_dir = tempfile.mkdtemp()
