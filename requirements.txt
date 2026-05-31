@@ -1,4 +1,3 @@
 flask
-yt-dlp
+yt-dlp[default]
 requests
-yt-dlp-quickjs
