@@ -5,11 +5,11 @@ import tempfile
 import threading
 import uuid
 import requests
+import json as json_lib
 
 app = Flask(__name__)
 API_KEY = os.environ.get("API_KEY", "changeme")
 
-# מאגר סטטוס jobs
 jobs = {}
 
 def get_access_token():
@@ -31,14 +31,12 @@ def get_cookies_file():
     return tmp.name
 
 def upload_to_drive(file_path, filename, folder_id, access_token):
-    import json as json_lib
     metadata = {"name": filename}
     if folder_id:
         metadata["parents"] = [folder_id]
 
     file_size = os.path.getsize(file_path)
 
-    # שלב א': פתח session של העלאה
     init_resp = requests.post(
         "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable",
         headers={
@@ -53,7 +51,6 @@ def upload_to_drive(file_path, filename, folder_id, access_token):
     if not upload_url:
         return {"error": "Failed to get upload URL", "details": init_resp.text}
 
-    # שלב ב': העלאה בחלקים של 10MB
     chunk_size = 10 * 1024 * 1024
     uploaded = 0
 
@@ -84,7 +81,6 @@ def is_youtube(url):
     return "youtube.com" in url or "youtu.be" in url
 
 def download_direct(job_id, video_url, filename, folder_id):
-    """הורדת קישור ישיר (לא יוטיוב)"""
     try:
         jobs[job_id]["status"] = "DOWNLOADING"
         print(f"Starting direct download: {video_url}")
@@ -110,7 +106,6 @@ def download_direct(job_id, video_url, filename, folder_id):
             print(f"Downloaded {total} bytes")
 
         jobs[job_id]["status"] = "UPLOADING"
-        print("Starting upload to Drive")
         access_token = get_access_token()
         result = upload_to_drive(out_path, final_filename, folder_id, access_token)
         print(f"Upload result: {result}")
@@ -129,26 +124,25 @@ def download_direct(job_id, video_url, filename, folder_id):
         jobs[job_id]["status"] = "FAILED"
         jobs[job_id]["error"] = str(e)
 
-
 def download_and_upload(job_id, video_url, quality, filename, folder_id):
     try:
         jobs[job_id]["status"] = "DOWNLOADING"
 
         if quality == "audio":
-    fmt = "bestaudio[ext=m4a]/bestaudio/best"
-    ext = "m4a"
-elif quality == "1080":
-    fmt = "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best"
-    ext = "mp4"
-elif quality == "480":
-    fmt = "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best"
-    ext = "mp4"
-elif quality == "360":
-    fmt = "bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=360]+bestaudio/best"
-    ext = "mp4"
-else:
-    fmt = "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best"
-    ext = "mp4"
+            fmt = "bestaudio[ext=m4a]/bestaudio/best"
+            ext = "m4a"
+        elif quality == "1080":
+            fmt = "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best"
+            ext = "mp4"
+        elif quality == "480":
+            fmt = "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best"
+            ext = "mp4"
+        elif quality == "360":
+            fmt = "bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=360]+bestaudio/best"
+            ext = "mp4"
+        else:
+            fmt = "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best"
+            ext = "mp4"
 
         tmp_dir = tempfile.mkdtemp()
         out_path = os.path.join(tmp_dir, "video.%(ext)s")
@@ -156,13 +150,13 @@ else:
         cookies_file = get_cookies_file()
 
         ydl_opts = {
-    "format": fmt,
-    "outtmpl": out_path,
-    "quiet": True,
-    "no_warnings": True,
-    "merge_output_format": "mp4",
-    "format_sort": ["res", "ext:mp4:m4a"],
-}
+            "format": fmt,
+            "outtmpl": out_path,
+            "quiet": True,
+            "no_warnings": True,
+            "merge_output_format": "mp4",
+            "format_sort": ["res", "ext:mp4:m4a"],
+        }
         if cookies_file:
             ydl_opts["cookiefile"] = cookies_file
 
@@ -202,11 +196,7 @@ else:
 
 @app.route("/download")
 def download():
-    received_key = request.headers.get("X-API-Key")
-    print("Received key:", received_key)
-    print("Expected key:", API_KEY)
-
-    if received_key != API_KEY:
+    if request.headers.get("X-API-Key") != API_KEY:
         return jsonify({"error": "Unauthorized"}), 401
 
     video_url = request.args.get("url")
