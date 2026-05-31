@@ -166,7 +166,7 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
             "extractor_args": {"youtube": {"player_client": ["web", "tv"]}},
             "socket_timeout": 30,
             "nocheckcertificate": True,
-            "js_runtimes": {"quickjs": {"path": "/root/.nix-profile/bin/qjs"}},
+            "js_runtimes": {"quickjs": {"path": "/usr/local/bin/qjs"}},
         }
         if cookies_file:
             ydl_opts["cookiefile"] = cookies_file
