@@ -161,7 +161,7 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
             "verbose": True,
             "merge_output_format": "mp4",
             "format_sort": ["res", "ext:mp4:m4a"],
-            "extractor_args": {"youtube": {"skip": ["dash", "hls"]}},
+            "extractor_args": {"youtube": {"player_client": ["web", "tv"]}},
             "socket_timeout": 30,
             "nocheckcertificate": True,
         }
