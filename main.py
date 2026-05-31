@@ -6,6 +6,13 @@ import threading
 import uuid
 import requests
 import json as json_lib
+import quickjs as _qjs_module
+import shutil
+_qjs_path = os.path.join(os.path.dirname(_qjs_module.__file__), 'quickjs')
+if os.path.exists(_qjs_path):
+    shutil.copy(_qjs_path, '/usr/local/bin/qjs')
+    os.chmod('/usr/local/bin/qjs', 0o755)
+    print(f"Copied quickjs binary to /usr/local/bin/qjs")
 
 app = Flask(__name__)
 API_KEY = os.environ.get("API_KEY", "changeme")
