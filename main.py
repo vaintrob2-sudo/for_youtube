@@ -6,21 +6,6 @@ import threading
 import uuid
 import requests
 import json as json_lib
-import quickjs as _qjs_module
-import shutil
-_qjs_path = os.path.join(os.path.dirname(_qjs_module.__file__), 'quickjs')
-if os.path.exists(_qjs_path):
-    shutil.copy(_qjs_path, '/usr/local/bin/qjs')
-    os.chmod('/usr/local/bin/qjs', 0o755)
-    print(f"Copied quickjs binary to /usr/local/bin/qjs")
-import subprocess
-
-_qjs_dir = os.path.dirname(_qjs_module.__file__)
-print(f"quickjs package dir: {_qjs_dir}")
-print(f"files in dir: {os.listdir(_qjs_dir)}")
-
-result = subprocess.run(["/usr/local/bin/qjs", "--version"], capture_output=True, text=True)
-print(f"qjs test: {result.stdout} {result.stderr} returncode: {result.returncode}")
 
 app = Flask(__name__)
 API_KEY = os.environ.get("API_KEY", "changeme")
@@ -142,7 +127,6 @@ def download_direct(job_id, video_url, filename, folder_id):
 def download_and_upload(job_id, video_url, quality, filename, folder_id):
     try:
         jobs[job_id]["status"] = "DOWNLOADING"
-
         os.makedirs("/data/ytdlp_cache", exist_ok=True)
 
         if quality == "audio":
@@ -172,8 +156,8 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
             "quiet": True,
             "no_warnings": True,
             "merge_output_format": "mp4",
-            "extractor_args": {"youtube": {"player_client": ["tv_embedded"]}},
-            "cachedir": "/data/ytdlp_cache"
+            "js_runtimes": {"quickjs": {"path": "/root/.nix-profile/bin/qjs"}},
+            "cachedir": "/data/ytdlp_cache",
         }
         if cookies_file:
             ydl_opts["cookiefile"] = cookies_file
