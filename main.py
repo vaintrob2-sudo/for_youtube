@@ -127,11 +127,8 @@ def download_direct(job_id, video_url, filename, folder_id):
 def download_and_upload(job_id, video_url, quality, filename, folder_id):
     try:
         jobs[job_id]["status"] = "DOWNLOADING"
-        import subprocess
-        qjs_check = subprocess.run(["/usr/local/bin/qjs", "--version"], capture_output=True, text=True)
-        print(f"qjs version: {qjs_check.stdout.strip()} {qjs_check.stderr.strip()}")
-        node_check = subprocess.run(["node", "--version"], capture_output=True, text=True)
-        print(f"Node version: {node_check.stdout.strip()} {node_check.stderr.strip()}")
+
+        os.makedirs("/data/ytdlp_cache", exist_ok=True)
 
         if quality == "audio":
             fmt = "bestaudio[ext=m4a]/bestaudio"
@@ -160,9 +157,9 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
             "quiet": True,
             "no_warnings": True,
             "merge_output_format": "mp4",
-            "js_runtimes": {"quickjs": {"path": "/usr/local/bin/qjs"}},
+            "js_runtimes": {"quickjs": {"path": "/root/.nix-profile/bin/qjs"}},
+            "cachedir": "/data/ytdlp_cache",
         }
-        
         if cookies_file:
             ydl_opts["cookiefile"] = cookies_file
 
