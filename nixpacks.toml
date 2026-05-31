@@ -1,9 +1,9 @@
 [phases.setup]
-nixPkgs = ["python311", "ffmpeg", "curl", "gcc", "gnumake"]
+nixPkgs = ["python311", "ffmpeg", "curl", "gcc", "gnumake", "cmake"]
 
 [phases.build]
 cmds = [
-  "curl -L https://github.com/bellard/quickjs/archive/refs/tags/2025-04-26.tar.gz | tar xz",
-  "cd quickjs-2025-04-26 && make qjs && cp qjs /usr/local/bin/qjs",
+  "curl -L https://github.com/quickjs-ng/quickjs/archive/refs/tags/v0.9.0.tar.gz | tar xz",
+  "cd quickjs-ng-0.9.0 && cmake -B build && cmake --build build --target qjs && cp build/qjs /usr/local/bin/qjs",
   "pip install -r requirements.txt"
 ]
