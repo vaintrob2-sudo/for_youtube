@@ -151,7 +151,6 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
 
         print(f"fmt: {fmt}")
         print(f"cookies_file exists: {cookies_file is not None}")
-        print(f"ydl_opts: {ydl_opts}")
 
         ydl_opts = {
 
