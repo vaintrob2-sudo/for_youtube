@@ -153,11 +153,9 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
         ydl_opts = {
             "format": fmt,
             "outtmpl": out_path,
-            "quiet": False,
-            "no_warnings": False,
-            "verbose": True,
+            "quiet": True,
+            "no_warnings": True,
             "merge_output_format": "mp4",
-            "js_runtimes": {"quickjs": {"path": "/root/.nix-profile/bin/qjs"}},
             "cachedir": "/data/ytdlp_cache",
         }
         if cookies_file:
