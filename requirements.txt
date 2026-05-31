@@ -1,3 +1,4 @@
 flask
 yt-dlp[default]==2026.5.16.233954.dev0
 requests
+quickjs
