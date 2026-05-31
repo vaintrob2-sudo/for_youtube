@@ -14,6 +14,11 @@ if os.path.exists(_qjs_path):
     os.chmod('/usr/local/bin/qjs', 0o755)
     print(f"Copied quickjs binary to /usr/local/bin/qjs")
 import subprocess
+
+_qjs_dir = os.path.dirname(_qjs_module.__file__)
+print(f"quickjs package dir: {_qjs_dir}")
+print(f"files in dir: {os.listdir(_qjs_dir)}")
+
 result = subprocess.run(["/usr/local/bin/qjs", "--version"], capture_output=True, text=True)
 print(f"qjs test: {result.stdout} {result.stderr} returncode: {result.returncode}")
 
