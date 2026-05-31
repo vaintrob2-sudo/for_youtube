@@ -112,12 +112,22 @@ def download_direct(job_id, video_url, filename, folder_id):
         os.remove(out_path)
 
         if "id" in result:
+            file_id = result["id"]
+            
+            # הגדר הרשאה לכל מי שיש לו קישור
+            access_token = get_access_token()
+            requests.post(
+                f"https://www.googleapis.com/drive/v3/files/{file_id}/permissions",
+                headers={"Authorization": "Bearer " + access_token},
+                json={"role": "reader", "type": "anyone"}
+            )
+            
+            direct_link = f"https://drive.google.com/file/d/{file_id}/view?usp=sharing"
+            
             jobs[job_id]["status"] = "COMPLETED"
-            jobs[job_id]["file_id"] = result["id"]
-            jobs[job_id]["title"] = final_filename
-        else:
-            jobs[job_id]["status"] = "FAILED"
-            jobs[job_id]["error"] = str(result)
+            jobs[job_id]["file_id"] = file_id
+            jobs[job_id]["link"] = direct_link
+            jobs[job_id]["title"] = title
 
     except Exception as e:
         print(f"download_direct error: {e}")
@@ -187,12 +197,22 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
         os.remove(downloaded_file)
 
         if "id" in result:
+            file_id = result["id"]
+            
+            # הגדר הרשאה לכל מי שיש לו קישור
+            access_token = get_access_token()
+            requests.post(
+                f"https://www.googleapis.com/drive/v3/files/{file_id}/permissions",
+                headers={"Authorization": "Bearer " + access_token},
+                json={"role": "reader", "type": "anyone"}
+            )
+            
+            direct_link = f"https://drive.google.com/file/d/{file_id}/view?usp=sharing"
+            
             jobs[job_id]["status"] = "COMPLETED"
-            jobs[job_id]["file_id"] = result["id"]
+            jobs[job_id]["file_id"] = file_id
+            jobs[job_id]["link"] = direct_link
             jobs[job_id]["title"] = title
-        else:
-            jobs[job_id]["status"] = "FAILED"
-            jobs[job_id]["error"] = str(result)
 
     except Exception as e:
         jobs[job_id]["status"] = "FAILED"
