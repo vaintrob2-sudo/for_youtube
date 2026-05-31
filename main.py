@@ -127,24 +127,21 @@ def download_direct(job_id, video_url, filename, folder_id):
 def download_and_upload(job_id, video_url, quality, filename, folder_id):
     try:
         jobs[job_id]["status"] = "DOWNLOADING"
-        import subprocess
-        result = subprocess.run(["which", "qjs"], capture_output=True, text=True)
-        print(f"qjs path: {result.stdout.strip()}")
 
         if quality == "audio":
-            fmt = "bestaudio/best"
+            fmt = "bestaudio[ext=m4a]/bestaudio"
             ext = "m4a"
         elif quality == "1080":
-            fmt = "best[height<=1080]/best"
+            fmt = "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080]"
             ext = "mp4"
         elif quality == "480":
-            fmt = "best[height<=480]/best"
+            fmt = "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[height<=480]"
             ext = "mp4"
         elif quality == "360":
-            fmt = "best[height<=360]/best"
+            fmt = "bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/best[height<=360]"
             ext = "mp4"
         else:
-            fmt = "best[height<=720]/best"
+            fmt = "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720]"
             ext = "mp4"
 
         tmp_dir = tempfile.mkdtemp()
@@ -152,23 +149,16 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
 
         cookies_file = get_cookies_file()
 
-        print(f"fmt: {fmt}")
-        print(f"cookies_file exists: {cookies_file is not None}")
-
         ydl_opts = {
             "format": fmt,
             "outtmpl": out_path,
             "quiet": True,
-            "no_warnings": False,
-            "verbose": True,
+            "no_warnings": True,
             "merge_output_format": "mp4",
-            "format_sort": ["res", "ext:mp4:m4a"],
-            "socket_timeout": 30,
-            "nocheckcertificate": True,
         }
         if cookies_file:
             ydl_opts["cookiefile"] = cookies_file
-            
+
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(video_url, download=True)
             title = info.get("title", "video")
