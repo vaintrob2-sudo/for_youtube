@@ -152,13 +152,13 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
 
         cookies_file = get_cookies_file()
 
-        ydl_opts = {
+      ydl_opts = {
             "format": fmt,
             "outtmpl": out_path,
             "quiet": True,
             "no_warnings": True,
             "merge_output_format": "mp4",
-            "js_runtimes": {"quickjs": {"path": "/usr/local/bin/qjs"}}},
+            "js_runtimes": {"quickjs": {"path": "/usr/local/bin/qjs"}},
         }
         
         if cookies_file:
