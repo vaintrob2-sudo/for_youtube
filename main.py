@@ -129,21 +129,21 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
         jobs[job_id]["status"] = "DOWNLOADING"
 
         if quality == "audio":
-            fmt = "bestaudio[ext=m4a]/bestaudio/best"
+            fmt = "bestaudio/best"
             ext = "m4a"
         elif quality == "1080":
-            fmt = "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best[height<=1080]/best"
+            fmt = "best[height<=1080]/best"
             ext = "mp4"
         elif quality == "480":
-            fmt = "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[height<=480][ext=mp4]/best[height<=480]/best"
+            fmt = "best[height<=480]/best"
             ext = "mp4"
         elif quality == "360":
-            fmt = "bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/best[height<=360][ext=mp4]/best[height<=360]/best"
+            fmt = "best[height<=360]/best"
             ext = "mp4"
         else:
-            fmt = "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best[height<=720]/best"
+            fmt = "best[height<=720]/best"
             ext = "mp4"
-            
+
         tmp_dir = tempfile.mkdtemp()
         out_path = os.path.join(tmp_dir, "video.%(ext)s")
 
@@ -156,6 +156,9 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
             "no_warnings": True,
             "merge_output_format": "mp4",
             "format_sort": ["res", "ext:mp4:m4a"],
+            "extractor_args": {"youtube": {"skip": ["dash", "hls"]}},
+            "socket_timeout": 30,
+            "nocheckcertificate": True,
         }
         if cookies_file:
             ydl_opts["cookiefile"] = cookies_file
