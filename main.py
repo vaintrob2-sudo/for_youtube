@@ -13,6 +13,9 @@ if os.path.exists(_qjs_path):
     shutil.copy(_qjs_path, '/usr/local/bin/qjs')
     os.chmod('/usr/local/bin/qjs', 0o755)
     print(f"Copied quickjs binary to /usr/local/bin/qjs")
+import subprocess
+result = subprocess.run(["/usr/local/bin/qjs", "--version"], capture_output=True, text=True)
+print(f"qjs test: {result.stdout} {result.stderr} returncode: {result.returncode}")
 
 app = Flask(__name__)
 API_KEY = os.environ.get("API_KEY", "changeme")
