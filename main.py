@@ -127,6 +127,9 @@ def download_direct(job_id, video_url, filename, folder_id):
 def download_and_upload(job_id, video_url, quality, filename, folder_id):
     try:
         jobs[job_id]["status"] = "DOWNLOADING"
+        import subprocess
+        node_check = subprocess.run(["node", "--version"], capture_output=True, text=True)
+        print(f"Node version: {node_check.stdout.strip()} {node_check.stderr.strip()}")
 
         if quality == "audio":
             fmt = "bestaudio[ext=m4a]/bestaudio"
