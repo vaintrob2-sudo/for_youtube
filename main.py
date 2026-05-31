@@ -149,11 +149,17 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
 
         cookies_file = get_cookies_file()
 
+        print(f"fmt: {fmt}")
+        print(f"cookies_file exists: {cookies_file is not None}")
+        print(f"ydl_opts: {ydl_opts}")
+
         ydl_opts = {
+
             "format": fmt,
             "outtmpl": out_path,
             "quiet": True,
-            "no_warnings": True,
+            "no_warnings": False,
+            "verbose": True,
             "merge_output_format": "mp4",
             "format_sort": ["res", "ext:mp4:m4a"],
             "extractor_args": {"youtube": {"skip": ["dash", "hls"]}},
