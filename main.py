@@ -158,8 +158,10 @@ def download_and_upload(job_id, video_url, quality, filename, folder_id):
             "quiet": True,
             "no_warnings": True,
             "merge_output_format": "mp4",
+            "js_runtimes": {"quickjs": {"path": "/usr/local/bin/qjs"}}},
             "extractor_args": {"youtube": {"player_client": ["android"]}},
         }
+        
         if cookies_file:
             ydl_opts["cookiefile"] = cookies_file
 
